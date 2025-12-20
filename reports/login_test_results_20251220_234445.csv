@@ -1,0 +1,11 @@
+﻿Project,Application,Micro_Application,Test_Case_Title,Test_Description,Expected_Result,Actual_Result,Status,Remark,Task_ID,Ticket_ID
+Tower Track,Web,Login Module,Login without credentials,Click login without entering data,Validation message should appear,Validation message displayed,Pass,,1923,
+Tower Track,Web,Login Module,Login with invalid credentials,Enter wrong email/password,Error alert should appear,Error alert displayed,Pass,Alert handled,1923,
+Tower Track,Web,Login Module,Login with valid credentials,Enter correct email/password,Dashboard should load,Dashboard loaded successfully,Pass,,1923,
+Tower Track,Web,Dashboard,Open Part Allocation Insights,Click Part Allocation Insights slider,Slider should open,Slider opened,Pass,,DASH-01,
+Tower Track,Web,Facility,Open Facility Status Tracker,Hover and click Facility Status Tracker card,Facility page should open,Facility page opened,Pass,,FAC-01,
+Tower Track,Web,Strategic Overview,Verify Strategic Overview,Check Strategic Overview page,Strategic Overview should load,Strategic Overview loaded,Pass,,SO-01,
+Tower Track,Web,Strategic Overview,Hover on map circle 1,Hover on facility circle 1,Tooltip should appear,Tooltip appeared,Pass,,MAP-HOVER-01,
+Tower Track,Web,Strategic Overview,Hover on map circle 2,Hover on facility circle 2,Tooltip should appear,Tooltip appeared,Pass,,MAP-HOVER-02,
+Tower Track,Web,Strategic Overview,Hover on map circle 3,Hover on facility circle 3,Tooltip should appear,Tooltip appeared,Pass,,MAP-HOVER-03,
+Tower Track,Web,Strategic Overview,Hover on map circle 4,Hover on facility circle 4,Tooltip should appear,Tooltip appeared,Pass,,MAP-HOVER-04,

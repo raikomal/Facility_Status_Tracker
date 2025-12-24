@@ -23,12 +23,12 @@ class LoginPage:
         self.driver.find_element(By.XPATH, self.password_input).send_keys(password)
         self.driver.find_element(By.XPATH, self.login_button).click()
 
-    # ✅ ALERT HANDLING (EXACT CONDITION YOU ASKED)
+    # ALERT HANDLING
     def accept_alert_if_present(self):
         try:
             myalert = self.driver.switch_to.alert
-            print("⚠️ Alert text:", myalert.text)
+            print("Alert text:", myalert.text)
             myalert.accept()   # CLICK OK
-            print("✅ Alert OK clicked")
+            print(" Alert OK clicked")
         except NoAlertPresentException:
             pass

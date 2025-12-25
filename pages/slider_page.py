@@ -51,6 +51,23 @@ class SliderPage:
         self.driver = driver
         self.wait = WebDriverWait(driver, 30)
 
+    # =========================================================
+    # BACKWARD COMPATIBILITY (DO NOT REMOVE)
+    # =========================================================
+    def click_slider(self, slider_name: str):
+        """
+        Legacy method used by existing tests
+        """
+        self.click_slider_button(slider_name)
+
+    def hover_and_click_facility_status_tracker(self):
+        """
+        Legacy combined navigation used by older tests
+        """
+        self.navigate_to_part_allocation_insights()
+        self.open_facility_status_tracker()
+
+
     # ---------------- SLIDER BUTTONS ONLY ----------------
     def click_slider_button(self, name):
         """

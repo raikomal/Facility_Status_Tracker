@@ -283,26 +283,16 @@ from pages.slider_page import SliderPage
 from pages.facility_status_page import FacilityStatusPage
 from utils.csv_writer import start_new_report, write_test_report
 from utils.alert_handler import handle_any_alert
+from tests.login_helper import login_and_reach_dashboard
 
 
 def test_strategic_overview_flow(driver):
-
-    # =========================================================
-    # REPORT INIT
-    # =========================================================
-    start_new_report()
-
     slider = SliderPage(driver)
     facility = FacilityStatusPage(driver)
 
-    # =========================================================
-    # TC-SO-01: Navigation
-    # =========================================================
     slider.navigate_to_part_allocation_insights()
-    handle_any_alert(driver)
-
     slider.open_facility_status_tracker()
-    handle_any_alert(driver)
+
 
     write_test_report(
         "Tower Track", "Web", "Navigation",
@@ -312,6 +302,7 @@ def test_strategic_overview_flow(driver):
         "Facility Status page opened",
         "Pass", "", "SO-01", ""
     )
+
 
     # =========================================================
     # TC-SO-02: Page Load (MAP = READY)

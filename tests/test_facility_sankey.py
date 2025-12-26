@@ -32,7 +32,7 @@ def test_facility_sankey_chart_interaction(driver):
     facility.hover_flow_links(count=3)
 
     links = facility.get_flow_links()
-    assert len(links) > 0, "Sankey links not found after hover"
+    assert len(links) > 0, "No Sankey links found"
 
     write_test_report(
         "Tower Track", "Web", "Strategic Overview",
@@ -44,7 +44,7 @@ def test_facility_sankey_chart_interaction(driver):
     )
 
     # =========================================================
-    # TC-SO-09: Sankey Dropdown Interaction (TOP 2 ONLY)
+    # TC-SO-09: Sankey Dropdown Interaction (Top 2 only)
     # =========================================================
     dropdown = facility.get_sankey_dropdown()
     select = Select(dropdown)
@@ -64,8 +64,8 @@ def test_facility_sankey_chart_interaction(driver):
     write_test_report(
         "Tower Track", "Web", "Strategic Overview",
         "Verify Sankey dropdown interaction",
-        "Change facility dropdown & hover flows",
-        "Sankey should redraw and remain interactive",
+        "Change dropdown & validate Sankey redraw",
+        "Sankey should remain interactive",
         f"{len(options)} dropdown options detected",
         "Pass", "", "SO-09", ""
     )

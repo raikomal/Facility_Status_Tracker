@@ -6,6 +6,4 @@ Tower Track,Web,Login Module,Enter valid email,Enter registered email,Email shou
 Tower Track,Web,Login Module,Enter valid password,Enter correct password,Password should be accepted,Password entered,Pass,,LG-06,
 Tower Track,Web,Login Module,Click Login,Submit login form,Dashboard should load,Login submitted,Pass,,LG-07,
 Tower Track,Web,Login Module,Verify Dashboard,Wait for dashboard,Dashboard should be visible,Dashboard loaded successfully,Pass,,LG-08,
-Tower Track,Web,Strategic Overview,Verify Facility readiness graph,Hover readiness bars,Bars should be interactive,Facility readiness bars hovered,Pass,,SO-14,
-Tower Track,Web,Strategic Overview,Verify Resource ViewPoint readiness,Change readiness viewpoint,Chart should update correctly,Resource readiness view validated,Pass,,SO-15,
-Tower Track,Web,Strategic Overview,Verify Alert ViewPoint readiness,Change readiness viewpoint,Chart should update correctly,Alert readiness view validated,Pass,,SO-15,
+Tower Track,Web,Transportation View,Verify Transportation arrow navigation,Click transportation arrow,Transportation view should load,Transportation view loaded successfully,Pass,,SO-16,

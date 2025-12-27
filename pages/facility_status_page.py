@@ -1,7 +1,12 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait, Select
+
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from selenium.webdriver.common.keys import Keys
+
 import time
 
 
@@ -16,6 +21,14 @@ class FacilityStatusPage:
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 40)
+
+    # =========================================================
+    # WINDOW / TAB HANDLING
+    # =========================================================
+    def wait_for_new_window(self, old_window, timeout=10):
+        WebDriverWait(self.driver, timeout).until(
+            lambda d: len(d.window_handles) > 1
+            )
 
     # =========================================================
     # ONE-TIME PAGE READY (MAP SVG LOAD)
@@ -60,7 +73,7 @@ class FacilityStatusPage:
             "arguments[0].scrollIntoView({block:'center'});",
             header
         )
-        time.sleep(0.3)
+        time.sleep(0.5)
 
     # =========================================================
     # KPI CARDS (TOP SUMMARY)
@@ -324,137 +337,6 @@ class FacilityStatusPage:
             )
         )
 
-    # def scroll_to_readiness_summary(self):
-    #     header = self.wait.until(
-    #         EC.presence_of_element_located(
-    #             (By.XPATH, "//h2[normalize-space()='Facility Status Readiness Summary']")
-    #         )
-    #     )
-    #     self.driver.execute_script(
-    #         "arguments[0].scrollIntoView({block:'center'});", header
-    #     )
-    #     time.sleep(1)
-
-    # def get_readiness_viewpoint_dropdown(self):
-    #     """
-    #     Facility / Resource / Transportation / Alert dropdown
-    #     """
-    #     return self.wait.until(
-    #         EC.presence_of_element_located(
-    #             (By.XPATH, "//select[contains(@class,'rounded-md') and contains(@class,'text-black')]")
-    #         )
-    #     )
-    #
-    # def select_readiness_viewpoint(self, view):
-    #     """
-    #     view: Facility | Resource | Transportation | Alert
-    #     UI text: Facility ViewPoint | Resource ViewPoint | ...
-    #     """
-    #
-    #     dropdown = self.wait.until(
-    #         EC.presence_of_element_located(
-    #             (By.XPATH, "//select[contains(@class,'rounded-md')]")
-    #         )
-    #     )
-    #
-    #     # Map simple names to actual dropdown text
-    #     view_map = {
-    #         "Facility": "Facility ViewPoint",
-    #         "Resource": "Resource ViewPoint",
-    #         "Transportation": "Transportation ViewPoint",
-    #         "Alert": "Alert ViewPoint",
-    #     }
-    #
-    #     visible_text = view_map.get(view)
-    #     assert visible_text, f"Invalid readiness view: {view}"
-    #
-    #     Select(dropdown).select_by_visible_text(visible_text)
-    #
-    #     # Allow Highcharts redraw
-    #     time.sleep(2)
-    #
-    # def get_readiness_chart_container(self):
-    #     """
-    #     Returns ONLY the Facility Status Readiness Summary chart container
-    #     """
-    #     return self.wait.until(
-    #         EC.presence_of_element_located(
-    #             (
-    #                 By.XPATH,
-    #                 "//h2[contains(text(),'Facility Status Readiness Summary')]"
-    #                 "/following::div[contains(@class,'highcharts-container')][1]"
-    #             )
-    #         )
-    #     )
-    #
-    # def get_readiness_bars(self):
-    #     """
-    #     ONLY readiness bars (uses aria-label like:
-    #     'NYC2, 61, Readiness Score')
-    #     """
-    #     container = self.get_readiness_chart_container()
-    #
-    #     return self.wait.until(
-    #         EC.presence_of_all_elements_located(
-    #             (
-    #                 By.XPATH,
-    #                 ".//*[name()='path' and contains(@class,'highcharts-point') "
-    #                 "and contains(@aria-label,'Readiness')]"
-    #             )
-    #         )
-    #     )
-    #
-    # def wait_for_readiness_bars(self):
-    #     """
-    #     Wait ONLY for Facility Status Readiness bars
-    #     Uses aria-label to avoid map / sankey / KPI confusion
-    #     """
-    #     return self.wait.until(
-    #         EC.presence_of_all_elements_located(
-    #             (
-    #                 By.XPATH,
-    #                 "//*[name()='path' "
-    #                 "and contains(@class,'highcharts-point') "
-    #                 "and contains(@aria-label,'Readiness')]"
-    #             )
-    #         )
-    #     )
-    #
-    # def hover_readiness_bars(self, view="Facility"):
-    #     # Transportation has no bars
-    #     if view == "Transportation":
-    #         return True
-    #
-    #     container = self.get_readiness_chart_container()
-    #     self.driver.execute_script(
-    #         "arguments[0].scrollIntoView({block:'center'});", container
-    #     )
-    #     time.sleep(1)
-    #
-    #     bars = self.get_readiness_bars()
-    #     assert len(bars) > 0, "No readiness bars found"
-    #
-    #     # Hover only first 2–3 bars (safe)
-    #     for bar in bars[:3]:
-    #         ActionChains(self.driver).move_to_element(bar).pause(0.4).perform()
-    #
-    #     return True
-    #
-    # def click_transportation_arrow(self):
-    #     arrow = self.wait.until(
-    #         EC.element_to_be_clickable(
-    #             (
-    #                 By.XPATH,
-    #                 "//h2[normalize-space()='Transportation Dependency Readiness Summary']"
-    #                 "/following::button[1]"
-    #             )
-    #         )
-    #     )
-    #
-    #     self.driver.execute_script("arguments[0].click();", arrow)
-    #     time.sleep(2)
-    #
-    #     self.driver.switch_to.window(self.driver.window_handles[-1])
     #
     # ================= FACILITY STATUS READINESS SUMMARY =================
 
@@ -466,7 +348,13 @@ class FacilityStatusPage:
         )
         return True
 
+    from selenium.webdriver.common.keys import Keys
+
     def select_readiness_viewpoint(self, view):
+        """
+        React-safe select change (forces onChange to fire)
+        """
+
         value_map = {
             "Facility": "facility",
             "Resource": "resource",
@@ -474,25 +362,35 @@ class FacilityStatusPage:
             "Alert": "alert",
         }
 
-        dropdown = self.wait.until(
-            EC.element_to_be_clickable(
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
                 (By.XPATH, "//select[contains(@class,'w-56')]")
             )
         )
 
-        Select(dropdown).select_by_value(value_map[view])
-        time.sleep(2)
+        # 🔥 Force React onChange
+        self.driver.execute_script(
+            """
+            const select = arguments[0];
+            select.value = arguments[1];
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            """,
+            select_el,
+            value_map[view]
+        )
 
-    def get_readiness_bars(self):
-        return self.wait.until(
-            EC.presence_of_all_elements_located(
-                (
-                    By.XPATH,
-                    "//*[name()='path' and contains(@class,'highcharts-point') "
-                    "and contains(@aria-label,'Readiness Score')]"
+        # ✅ Wait until Transportation panel renders
+        if view == "Transportation":
+            self.wait.until(
+                EC.presence_of_element_located(
+                    (
+                        By.XPATH,
+                        "//h2[normalize-space()='Transportation Dependency Readiness Summary']"
+                    )
                 )
             )
-        )
+
+        return True
 
     def hover_readiness_bars(self):
         """
@@ -511,7 +409,7 @@ class FacilityStatusPage:
 
         assert len(bars) > 0, "No readiness bars found (Facility ViewPoint)"
 
-        for bar in bars[:3]:
+        for bar in bars[:5]:
             self.driver.execute_script(
                 "arguments[0].scrollIntoView({block:'center'});", bar
             )
@@ -520,16 +418,297 @@ class FacilityStatusPage:
         return True
 
     def click_transportation_arrow(self):
-        arrow = self.wait.until(
-            EC.element_to_be_clickable(
+        """
+        Click MdArrowOutward and switch to new tab
+        """
+
+        parent = self.driver.current_window_handle
+
+        arrow_svg = self.wait.until(
+            EC.presence_of_element_located(
                 (
                     By.XPATH,
-                    "//div[contains(text(),'Transportation Dependency Readiness Summary')]"
-                    "/following::button[1]"
+                    "//h2[contains(text(),'Transportation Dependency')]"
+                    "/following-sibling::div//*[name()='svg']"
                 )
             )
         )
-        arrow.click()
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", arrow_svg
+        )
+
+        self.driver.execute_script(
+            "arguments[0].dispatchEvent(new MouseEvent('click',{bubbles:true}));",
+            arrow_svg
+        )
+
+        # 🔑 WAIT FOR NEW TAB
+        self.wait.until(lambda d: len(d.window_handles) > 1)
+
+        # 🔑 SWITCH TO NEW TAB
+        for handle in self.driver.window_handles:
+            if handle != parent:
+                self.driver.switch_to.window(handle)
+                break
+
+        return True
+
+    def verify_transportation_view_page_loaded(self):
+        """
+        New-tab-safe verification
+        """
+
+        # Wait for routing
+        self.wait.until(lambda d: "transportation_view" in d.current_url)
+
+        # Wait for DOM ready
+        self.wait.until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+
+        # Buffer for heavy SVG
         time.sleep(2)
 
-        self.driver.switch_to.window(self.driver.window_handles[-1])
+        return True
+
+    def select_transportation_facility(self, facility_name="PHX1"):
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Facility:']/following-sibling::select")
+            )
+        )
+
+        Select(select_el).select_by_visible_text(facility_name)
+        time.sleep(2)
+
+    def select_transportation_phase(self, phase_name="Phase B"):
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Phase:']/following-sibling::select")
+            )
+        )
+
+        Select(select_el).select_by_visible_text(phase_name)
+        time.sleep(2)
+
+    def remove_part_category(self, category_name="Other"):
+        """
+        Remove a Part Category chip if present (safe, non-blocking)
+        """
+
+        time.sleep(1.5)  # allow chips to render after phase change
+
+        chips = self.driver.find_elements(
+            By.XPATH,
+            f"//span[normalize-space()='{category_name}']/ancestor::div[contains(@class,'flex')]"
+        )
+
+        # If category is not present, do nothing (important)
+        if not chips:
+            print(f"ℹ️ Part Category '{category_name}' not present, skipping removal")
+            return True
+
+        chip = chips[0]
+
+        # Find SVG inside the chip
+        cross_icons = chip.find_elements(By.XPATH, ".//*[name()='svg']")
+
+        if not cross_icons:
+            print(f"⚠️ No remove icon found for '{category_name}', skipping")
+            return True
+
+        cross = cross_icons[0]
+
+        # Scroll + JS click (SVG-safe)
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", cross
+        )
+
+        self.driver.execute_script(
+            """
+            arguments[0].dispatchEvent(
+                new MouseEvent('click', { bubbles: true, cancelable: true })
+            );
+            """,
+            cross
+        )
+
+        time.sleep(1.5)  # allow UI update
+
+        print(f"✅ Removed Part Category '{category_name}'")
+        return True
+
+    def scroll_to_dependency_graph(self):
+        header = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h1[normalize-space()='Dependency Graph']")
+            )
+        )
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", header
+        )
+        time.sleep(1.5)
+
+    def change_dependency_graph_view_slowly(self):
+        dropdown = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h1[normalize-space()='Dependency Graph']/following::select[1]")
+            )
+        )
+
+        select = Select(dropdown)
+
+        for option in select.options:
+            select.select_by_visible_text(option.text)
+            time.sleep(2.5)  # 👀 human-visible
+
+    def get_transportation_top_summary(self):
+        """
+        Reads top summary values on Transportation View
+        """
+
+        summary = {}
+
+        summary["facility"] = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[contains(text(),'Facility')]/following::div[1]")
+            )
+        ).text.strip()
+
+        summary["phase"] = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[contains(text(),'Phase')]/following::div[1]")
+            )
+        ).text.strip()
+
+        summary["completeness"] = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(),'Completeness')]/following::div[1]")
+            )
+        ).text.strip()
+
+        summary["dependency_violations"] = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(),'Dependency Violations')]/following::div[1]")
+            )
+        ).text.strip()
+
+        summary["transportation_ready"] = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[contains(text(),'Transportation Ready')]/following::span[1]")
+            )
+        ).text.strip()
+
+        return summary
+
+    def get_required_parts_table(self):
+        """
+        SAFE: Required Parts may or may not exist
+        """
+
+        time.sleep(2)
+
+        headers = self.driver.find_elements(
+            By.XPATH, "//h3[contains(text(),'Required Parts')]"
+        )
+
+        # Section not present → valid business state
+        if not headers:
+            print("ℹ️ Required Parts section not present")
+            return []
+
+        header = headers[0]
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", header
+        )
+
+        time.sleep(2)
+
+        rows = self.driver.find_elements(
+            By.XPATH,
+            "//h3[contains(text(),'Required Parts')]/following::tbody/tr"
+        )
+
+        data = []
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, "td")
+            if len(cols) >= 4:
+                data.append({
+                    "part_id": cols[1].text.strip(),
+                    "qty_required": cols[2].text.strip(),
+                    "arrival": cols[3].text.strip(),
+                    "category": cols[4].text.strip() if len(cols) > 4 else ""
+                })
+
+        print(f"ℹ️ Required Parts rows: {len(data)}")
+        return data
+
+    def get_dependency_status_table(self):
+        """
+        Extract Dependency Status table
+        """
+
+        rows = self.wait.until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//h3[contains(text(),'Dependency Status')]/following::tbody/tr")
+            )
+        )
+
+        data = []
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, "td")
+            data.append({
+                "dependency": cols[1].text.strip(),
+                "prereq_arrival": cols[2].text.strip(),
+                "dep_arrival": cols[3].text.strip(),
+                "ok_status": cols[4].text.strip()
+            })
+
+        return data
+
+    def get_transportation_facility(self):
+        """
+        Read selected Facility value
+        """
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Facility:']/following-sibling::select")
+            )
+        )
+        return Select(select_el).first_selected_option.text.strip()
+
+    def get_transportation_phase(self):
+        """
+        Read selected Phase value
+        """
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Phase:']/following-sibling::select")
+            )
+        )
+        return Select(select_el).first_selected_option.text.strip()
+
+    def get_transportation_part_categories(self):
+        """
+        Read selected Part Category chips
+        """
+
+        container = self.wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//label[normalize-space()='Part Category:']/following-sibling::div"
+                )
+            )
+        )
+
+        chips = container.find_elements(By.XPATH, ".//div[contains(@class,'rounded')]")
+
+        return [chip.text.strip() for chip in chips if chip.text.strip()]
+
+
+
+
+

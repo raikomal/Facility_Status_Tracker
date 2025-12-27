@@ -6,4 +6,3 @@ Tower Track,Web,Login Module,Enter valid email,Enter registered email,Email shou
 Tower Track,Web,Login Module,Enter valid password,Enter correct password,Password should be accepted,Password entered,Pass,,LG-06,
 Tower Track,Web,Login Module,Click Login,Submit login form,Dashboard should load,Login submitted,Pass,,LG-07,
 Tower Track,Web,Login Module,Verify Dashboard,Wait for dashboard,Dashboard should be visible,Dashboard loaded successfully,Pass,,LG-08,
-Tower Track,Web,Strategic Overview,Verify Facility ViewPoint readiness graph,Hover readiness bars,Bars should be interactive,Facility readiness bars hovered,Pass,,SO-14,

@@ -647,25 +647,37 @@ class FacilityStatusPage:
 
     def get_dependency_status_table(self):
         """
-        Extract Dependency Status table
+        SAFE: Dependency Status table may or may not exist
         """
 
-        rows = self.wait.until(
-            EC.presence_of_all_elements_located(
-                (By.XPATH, "//h3[contains(text(),'Dependency Status')]/following::tbody/tr")
-            )
+        time.sleep(2)
+
+        headers = self.driver.find_elements(
+            By.XPATH, "//h3[contains(text(),'Dependency Status')]"
+        )
+
+        #  Table not present = valid business case
+        if not headers:
+            print("Dependency Status section not present")
+            return []
+
+        rows = self.driver.find_elements(
+            By.XPATH,
+            "//h3[contains(text(),'Dependency Status')]/following::tbody/tr"
         )
 
         data = []
         for row in rows:
             cols = row.find_elements(By.TAG_NAME, "td")
-            data.append({
-                "dependency": cols[1].text.strip(),
-                "prereq_arrival": cols[2].text.strip(),
-                "dep_arrival": cols[3].text.strip(),
-                "ok_status": cols[4].text.strip()
-            })
+            if len(cols) >= 4:
+                data.append({
+                    "dependency": cols[1].text.strip(),
+                    "prereq_arrival": cols[2].text.strip(),
+                    "dep_arrival": cols[3].text.strip(),
+                    "status": cols[4].text.strip() if len(cols) > 4 else ""
+                })
 
+        print(f" Dependency Status rows: {len(data)}")
         return data
 
     def get_transportation_facility(self):

@@ -846,6 +846,103 @@ class FacilityStatusPage:
 
         time.sleep(2.5)  # 👀 human visible
         print(f"✅ Part selected: {value}")
+    #tab location navigation in the operational insights
+    def open_part_dependency_graph_tab(self):
+        """
+        Click Part Dependency Graph arrow (Operational Insights)
+        and switch to new tab
+        """
+
+        parent = self.driver.current_window_handle
+
+        # 🔥 Locate arrow RELATIVE to heading text
+        arrow = self.wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//h2[normalize-space()='Part Dependency Graph']"
+                    "/ancestor::div[contains(@class,'flex')]"
+                    "//*[name()='svg']"
+                )
+            )
+        )
+
+        # Scroll into view
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", arrow
+        )
+        time.sleep(0.5)
+
+        # 🔥 JS click (React-safe)
+        self.driver.execute_script(
+            "arguments[0].dispatchEvent(new MouseEvent('click',{bubbles:true}));",
+            arrow
+        )
+
+        # 🔑 wait for new tab
+        self.wait.until(lambda d: len(d.window_handles) > 1)
+
+        # 🔑 switch to new tab
+        for handle in self.driver.window_handles:
+            if handle != parent:
+                self.driver.switch_to.window(handle)
+                break
+
+        print("✅ Part Dependency Graph opened in new tab")
+        return parent
+
+    def select_first_three_dependency_options(self):
+        """
+        Select only the required 3 options in Part Dependency Graph dropdown
+        (Operational Insights → new tab)
+        """
+
+        dropdown = self.wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//h1[normalize-space()='Part Dependency Graph']/following::select[1]"
+                )
+            )
+        )
+        time.sleep(1)
+        select = Select(dropdown)
+
+        values_to_select = [
+            "Big Box LV Switchgear",
+            "Generator w/ Enclosure",
+            "UPS Cabinets & Batteries - 1500kW"
+        ]
+
+        for value in values_to_select:
+            select.select_by_visible_text(value)
+            time.sleep(2)  # human-visible delay
+
+        print("✅ Selected required dependency options")
+
+    def close_child_and_return(self, parent_window):
+        current = self.driver.current_window_handle
+
+        if current != parent_window:
+            self.driver.close()
+
+        self.driver.switch_to.window(parent_window)
+        time.sleep(1.5)
+
+        print("✅ Part Dependency Graph tab closed and returned to parent")
+
+    # ================= PART DEPENDENCY GRAPH =================
+
+    def close_child_and_return(self, parent_window):
+        current = self.driver.current_window_handle
+
+        if current != parent_window:
+            self.driver.close()
+
+        self.driver.switch_to.window(parent_window)
+        time.sleep(1.5)
+
+        print("✅ Part Dependency Graph tab closed and returned to parent")
 
 
 

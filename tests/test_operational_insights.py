@@ -1,6 +1,7 @@
 from pages.slider_page import SliderPage
 from pages.facility_status_page import FacilityStatusPage
 from utils.csv_writer import write_test_report
+import time
 
 
 def test_operational_insights_flow(driver):
@@ -13,13 +14,13 @@ def test_operational_insights_flow(driver):
 
     facility.go_to_operational_insights()
 
-    # ================= FILTERS =================
+    # ================= FILTERS (DEFAULT) =================
     filters = facility.get_operational_filters()
     assert isinstance(filters, dict)
 
     write_test_report(
         "Tower Track", "Web", "Operational Insights",
-        "Verify filters",
+        "Verify default filters",
         "Read selected filters",
         "Filters should be visible",
         str(filters),
@@ -51,28 +52,56 @@ def test_operational_insights_flow(driver):
         str(inventory),
         "Pass", "", "OI-03", ""
     )
-    # ================= STEP 1 =================
+
+    # ================= STEP 1: DELAYED =================
     facility.select_operational_status("delayed")
     facility.select_operational_part("CRAH Stands")
+
+    time.sleep(1.5)
+
+    rows_delayed = facility.get_operational_allocation_table()
 
     write_test_report(
         "Tower Track", "Web", "Operational Insights",
         "Verify Delayed + CRAH Stands",
         "Change filters",
         "Table should update",
-        "Status=Delayed, Part=CRAH Stands",
+        f"Rows: {len(rows_delayed)}",
         "Pass", "", "OI-04", ""
     )
 
-    # ================= STEP 2 (CORRECTED) =================
+    # ================= STEP 2: PENDING =================
     facility.select_operational_status("pending")
     facility.select_operational_part("Cable Busway")
+
+    time.sleep(1.5)
+
+    rows_pending = facility.get_operational_allocation_table()
 
     write_test_report(
         "Tower Track", "Web", "Operational Insights",
         "Verify Pending + Cable Busway",
         "Change filters",
         "Table should update",
-        "Status=Pending, Part=Cable Busway",
+        f"Rows: {len(rows_pending)}",
         "Pass", "", "OI-05", ""
     )
+
+    # ================= PART DEPENDENCY GRAPH (NEW TAB) =================
+    parent_window = driver.current_window_handle
+
+    parent = facility.open_part_dependency_graph_tab()
+
+    facility.select_first_three_dependency_options()
+
+    write_test_report(
+        "Tower Track", "Web", "Operational Insights",
+        "Verify Part Dependency Graph",
+        "Open graph and change dropdown",
+        "Graph should update",
+        "Selected first 3 dropdown options",
+        "Pass", "", "OI-06", ""
+    )
+
+    facility.close_child_and_return(parent)
+

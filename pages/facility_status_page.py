@@ -719,6 +719,133 @@ class FacilityStatusPage:
         chips = container.find_elements(By.XPATH, ".//div[contains(@class,'rounded')]")
 
         return [chip.text.strip() for chip in chips if chip.text.strip()]
+    #operational insights Tab
+    def go_to_operational_insights(self):
+        tab = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Operational Insights']")
+            )
+        )
+        tab.click()
+
+        # Wait for Operational Insights header
+        self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h2[contains(text(),'Part Demand And Allocation Status')]")
+            )
+        )
+
+        time.sleep(1.5)
+        return True
+
+    def get_operational_filters(self):
+        return {
+            "status": Select(
+                self.wait.until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//label[normalize-space()='Status:']/following-sibling::select")
+                    )
+                )
+            ).first_selected_option.text.strip(),
+
+            "part": Select(
+                self.wait.until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//label[normalize-space()='Part ID:']/following-sibling::select")
+                    )
+                )
+            ).first_selected_option.text.strip(),
+
+            "facility": Select(
+                self.wait.until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//label[normalize-space()='Facility ID:']/following-sibling::select")
+                    )
+                )
+            ).first_selected_option.text.strip()
+        }
+
+    def get_operational_allocation_table(self):
+        rows = self.driver.find_elements(
+            By.XPATH, "//table//tbody/tr"
+        )
+
+        data = []
+        for row in rows:
+            cols = row.find_elements(By.TAG_NAME, "td")
+            if len(cols) >= 5:
+                data.append({
+                    "part": cols[0].text.strip(),
+                    "facility": cols[1].text.strip(),
+                    "qty": cols[2].text.strip(),
+                    "time": cols[3].text.strip(),
+                    "status": cols[4].text.strip()
+                })
+
+        print(f"ℹ️ Allocation rows: {len(data)}")
+        return data
+
+    def get_part_inventory_details(self):
+        labels = self.driver.find_elements(
+            By.XPATH, "//div[contains(text(),'Part Inventory Details')]"
+        )
+
+        if not labels:
+            print("ℹ️ Inventory details not present")
+            return {}
+
+        container = labels[0].find_element(
+            By.XPATH, "./ancestor::div[contains(@class,'rounded')]"
+        )
+
+        texts = container.text.splitlines()
+        return {t.split(":")[0]: t.split(":")[1].strip() for t in texts if ":" in t}
+
+    def select_operational_status(self, value):
+        """
+        value = delayed | pending | fulfilled
+        """
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Status:']/following-sibling::select")
+            )
+        )
+
+        self.driver.execute_script(
+            """
+            const select = arguments[0];
+            select.value = arguments[1];
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            """,
+            select_el,
+            value
+        )
+
+        time.sleep(2.5)  # 👀 human visible
+        print(f"✅ Status changed to {value}")
+
+    def select_operational_part(self, value):
+        """
+        value = CRAH Stands | Floor Tiles - 32%
+        """
+        select_el = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Part ID:']/following-sibling::select")
+            )
+        )
+
+        self.driver.execute_script(
+            """
+            const select = arguments[0];
+            select.value = arguments[1];
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            """,
+            select_el,
+            value
+        )
+
+        time.sleep(2.5)  # 👀 human visible
+        print(f"✅ Part selected: {value}")
 
 
 

@@ -947,50 +947,206 @@ class FacilityStatusPage:
         # Navigate to Impact Analysis tab
 
     def go_to_impact_analysis(self):
-        tab = self.wait.until(
+        """
+        Navigate to Impact Analysis and VERIFY page load
+        """
+
+        # Click Impact Analysis tab
+        impact_tab = self.wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[normalize-space()='Impact Analysis']")
             )
         )
-        tab.click()
-        time.sleep(1.5)
+        impact_tab.click()
 
-        print("✅ Navigated to Impact Analysis")
-
-    def get_impact_filters(self):
-        filters = {}
-
-        try:
-            status = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, "//label[contains(text(),'Status')]/following::select[1]")
-                )
-            )
-            filters["status"] = Select(status).first_selected_option.text.strip()
-        except:
-            filters["status"] = None
-
-        try:
-            part = self.wait.until(
-                EC.presence_of_element_located(
-                    (By.XPATH, "//label[contains(text(),'Part')]/following::select[1]")
-                )
-            )
-            filters["part"] = Select(part).first_selected_option.text.strip()
-        except:
-            filters["part"] = None
-
-        return filters
-
-    def select_impact_status(self, value):
-        dropdown = self.wait.until(
+        # 🔑 HARD VERIFICATION (THIS WAS MISSING)
+        self.wait.until(
             EC.presence_of_element_located(
-                (By.XPATH, "//label[contains(text(),'Status')]/following::select[1]")
+                (
+                    By.XPATH,
+                    "//h2[normalize-space()='Allocation Recommendation']"
+                )
             )
         )
-        Select(dropdown).select_by_value(value)
+
+        # Small buffer for React hydration
         time.sleep(1)
-        print(f"✅ Impact Status selected: {value}")
+
+        print("✅ Impact Analysis page fully loaded")
+        return True
+
+    def select_impact_facility(self, facility_name):
+        """
+        Select Facility in Impact Analysis (scroll + safe)
+        """
+
+        dropdown = self.wait.until(
+            EC.presence_of_element_located(
+                (
+                    By.XPATH,
+                    "//select[contains(@class,'p-3') and contains(@class,'rounded-md')]"
+                )
+            )
+        )
+
+        # 🔑 CRITICAL: scroll first
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", dropdown
+        )
+        time.sleep(0.5)
+
+        Select(dropdown).select_by_visible_text(facility_name)
+
+        print(f"✅ Impact Facility selected: {facility_name}")
+
+    # def select_impact_status(self, status_value):
+    #     """
+    #     Select Status in Impact Analysis (Allocation Recommendation)
+    #     status_value: delayed | pending | fulfilled
+    #     """
+    #
+    #     # ✅ Ensure Allocation Recommendation section is fully rendered
+    #     self.wait.until(
+    #         EC.presence_of_element_located(
+    #             (By.XPATH, "//h2[normalize-space()='Allocation Recommendation']")
+    #         )
+    #     )
+    #
+    #     # ✅ Status dropdown (first select in Allocation Recommendation)
+    #     dropdown = self.wait.until(
+    #         EC.element_to_be_clickable(
+    #             (
+    #                 By.XPATH,
+    #                 "(//select[contains(@class,'rounded-md') and contains(@class,'text-black')])[1]"
+    #             )
+    #         )
+    #     )
+    #
+    #     time.sleep(0.6)  # React hydration buffer
+    #
+    #     Select(dropdown).select_by_visible_text(status_value)
+    #
+    #
+    #     print(f"✅ Impact Status selected: {status_value}")
+    #     time.sleep(1.2)
+    def get_impact_filters(self):
+        """
+        Read visible Impact Analysis filters safely
+        """
+
+        filters = {}
+
+        # Facility
+        try:
+            facility_select = self.driver.find_element(
+                By.XPATH,
+                "//select[contains(@class,'p-3') and contains(@class,'rounded-md')]"
+            )
+            filters["facility"] = Select(facility_select).first_selected_option.text.strip()
+        except Exception:
+            filters["facility"] = ""
+
+        # Start Date
+        try:
+            start_date = self.driver.find_element(
+                By.XPATH,
+                "//label[normalize-space()='Start Date']/following::input[1]"
+            )
+            filters["start_date"] = start_date.get_attribute("value")
+        except Exception:
+            filters["start_date"] = ""
+
+        # End Date
+        try:
+            end_date = self.driver.find_element(
+                By.XPATH,
+                "//label[normalize-space()='End Date']/following::input[1]"
+            )
+            filters["end_date"] = end_date.get_attribute("value")
+        except Exception:
+            filters["end_date"] = ""
+
+        print(f"ℹ️ Impact Filters: {filters}")
+        return filters
+
+    def select_impact_status(self, status_value):
+        dropdown = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//label[normalize-space()='Status']/following::select[1]")
+            )
+        )
+
+        # 🔑 SCROLL FIRST
+        self.scroll_into_view(dropdown)
+
+        # 🔑 WAIT UNTIL VISIBLE & CLICKABLE
+        self.wait.until(EC.element_to_be_clickable(dropdown))
+
+        Select(dropdown).select_by_visible_text(status_value)
+
+        time.sleep(1)
+        print(f"✅ Impact Status selected: {status_value}")
+
+    def select_impact_start_date(self, date_str):
+        """
+        date_str format: DD-MM-YYYY
+        """
+
+        start_date = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//label[normalize-space()='Start Date:']/following::input[1]")
+            )
+        )
+
+        start_date.clear()
+        start_date.send_keys(date_str)
+
+        print(f"✅ Impact Start Date selected: {date_str}")
+        time.sleep(0.8)
+
+    def select_impact_end_date(self, date_str):
+        """
+        date_str format: DD-MM-YYYY
+        """
+
+        end_date = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//label[normalize-space()='End Date:']/following::input[1]")
+            )
+        )
+
+        end_date.clear()
+        end_date.send_keys(date_str)
+
+        print(f"✅ Impact End Date selected: {date_str}")
+        time.sleep(0.8)
+
+    def click_get_recommendation(self):
+        """
+        Click Get Recommendation button in Impact Analysis
+        """
+
+        btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Get Recommendation']")
+            )
+        )
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});", btn
+        )
+
+        btn.click()
+
+        print("✅ Clicked Get Recommendation")
+        time.sleep(1)  # allow results to load
+
+    def scroll_into_view(self, element):
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({behavior:'smooth', block:'center'});",
+            element
+        )
+        time.sleep(0.8)
 
     def select_impact_part(self, part_name):
         dropdown = self.wait.until(
@@ -1013,50 +1169,35 @@ class FacilityStatusPage:
         return rows
 
     # ================= IMPACT ANALYSIS → ALLOCATION RECOMMENDATION =================
-
+    # ================= IMPACT ANALYSIS NAVIGATION =================
     def go_to_impact_analysis(self):
-        """
-        Explicitly switch to Impact Analysis tab (React-safe)
-        """
-
-        impact_tab = self.wait.until(
+        tab = self.wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[normalize-space()='Impact Analysis']")
             )
         )
-
-        # React-safe click
-        self.driver.execute_script(
-            "arguments[0].click();", impact_tab
-        )
-
-        # ✅ Wait until Impact Analysis content appears
-        self.wait.until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//h2[contains(text(),'Allocation Recommendation')]")
-            )
-        )
-
+        tab.click()
+        time.sleep(1)
         print("✅ Switched to Impact Analysis tab")
-        return True
+
+        # ================= FACILITY DROPDOWN =================
 
     def select_impact_facility(self, facility_name):
-        """
-        Select Facility dropdown
-        """
         dropdown = self.wait.until(
             EC.presence_of_element_located(
-                (By.XPATH, "//label[normalize-space()='Select Facility:']/following-sibling::select")
+                (
+                    By.XPATH,
+                    "//select[contains(@class,'p-3') and contains(@class,'text-xl')]"
+                )
             )
         )
         Select(dropdown).select_by_visible_text(facility_name)
-        time.sleep(1.5)
+        time.sleep(1)
         print(f"✅ Impact Facility selected: {facility_name}")
 
+        # ================= DATE PICKERS =================
+
     def select_impact_start_date(self, date_value):
-        """
-        date_value format: YYYY-MM-DD
-        """
         start_date = self.wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[normalize-space()='Start Date:']/following-sibling::input")
@@ -1068,9 +1209,6 @@ class FacilityStatusPage:
         print(f"✅ Start Date selected: {date_value}")
 
     def select_impact_end_date(self, date_value):
-        """
-        date_value format: YYYY-MM-DD
-        """
         end_date = self.wait.until(
             EC.presence_of_element_located(
                 (By.XPATH, "//label[normalize-space()='End Date:']/following-sibling::input")
@@ -1081,19 +1219,149 @@ class FacilityStatusPage:
         time.sleep(1)
         print(f"✅ End Date selected: {date_value}")
 
+        # ================= GET RECOMMENDATION =================
+
     def click_get_recommendation(self):
-        """
-        Click Get Recommendation button
-        """
         btn = self.wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[normalize-space()='Get Recommendation']")
             )
         )
         btn.click()
-        time.sleep(3)
+        time.sleep(2)
         print("✅ Get Recommendation clicked")
 
+        # ================= MODIFY ALLOCATION =================
 
+    def click_modify_allocation(self):
+        btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Modify Allocation']")
+            )
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
+        time.sleep(1)
+        btn.click()
+        time.sleep(2)
+        print("✅ Modify Allocation opened")
+
+        # ================= FILL ALLOCATION VALUES =================
+
+    def fill_modified_allocation(self, values):
+        """
+        values = [20, 50, 70]
+        """
+        rows = self.wait.until(
+            EC.presence_of_all_elements_located(
+                (By.XPATH, "//table/tbody/tr")
+            )
+        )
+
+        for i, value in enumerate(values):
+            cell = rows[i].find_element(By.XPATH, "./td[3]")
+            cell.click()
+            time.sleep(0.5)
+            cell.clear()
+            cell.send_keys(str(value))
+            time.sleep(0.5)
+
+        print("✅ Modified allocation values entered")
+
+        # ================= COMPUTE COST IMPACT =================
+
+    def click_compute_cost_impact(self):
+        btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Compute Cost Impact']")
+            )
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
+        time.sleep(1)
+        btn.click()
+        time.sleep(2)
+        print("✅ Compute Cost Impact clicked")
+
+    def modify_allocation_and_compute_cost(self):
+        from selenium.webdriver.common.action_chains import ActionChains
+        import time
+
+        # Click Modify Allocation
+        modify_btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Modify Allocation']")
+            )
+        )
+        modify_btn.click()
+        print("✅ Modify Allocation clicked")
+
+        time.sleep(1)
+
+        # Scroll to Modify Allocation section
+        header = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h3[normalize-space()='Modify Allocation']")
+            )
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", header)
+        time.sleep(1)
+
+        # Allocation cells (3 rows, 3rd column)
+        cell_xpaths = [
+            "//tbody/tr[1]/td[3]",
+            "//tbody/tr[2]/td[3]",
+            "//tbody/tr[3]/td[3]",
+        ]
+
+        values = ["20", "50", "70"]
+
+        for xpath, value in zip(cell_xpaths, values):
+            cell = self.wait.until(
+                EC.presence_of_element_located((By.XPATH, xpath))
+            )
+
+            # Click to activate cell
+            self.driver.execute_script("arguments[0].click();", cell)
+            time.sleep(0.5)
+
+            # Clear & set value via JS (React-safe)
+            self.driver.execute_script("""
+                arguments[0].innerText = '';
+                arguments[0].innerText = arguments[1];
+                arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+            """, cell, value)
+
+            print(f"✅ Allocation set to {value}")
+            time.sleep(0.8)
+
+        # Click Compute Cost Impact
+        compute_btn = self.wait.until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[normalize-space()='Compute Cost Impact']")
+            )
+        )
+        compute_btn.click()
+        print("✅ Compute Cost Impact clicked")
+
+        time.sleep(2)
+
+        # Scroll to cost graphs
+        graph_headers = [
+            "Cost Impact Of Decision (Recommended Allocation)",
+            "Cost Impact (Modified Allocation)"
+        ]
+
+        actions = ActionChains(self.driver)
+
+        for title in graph_headers:
+            graph = self.wait.until(
+                EC.presence_of_element_located(
+                    (By.XPATH, f"//h3[normalize-space()='{title}']")
+                )
+            )
+            self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", graph)
+            actions.move_to_element(graph).perform()
+            time.sleep(0.8)
+
+        print("✅ Cost graphs hovered successfully")
 
 

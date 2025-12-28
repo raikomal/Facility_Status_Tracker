@@ -6,5 +6,6 @@ Tower Track,Web,Login Module,Enter valid email,Enter registered email,Email shou
 Tower Track,Web,Login Module,Enter valid password,Enter correct password,Password should be accepted,Password entered,Pass,,LG-06,
 Tower Track,Web,Login Module,Click Login,Submit login form,Dashboard should load,Login submitted,Pass,,LG-07,
 Tower Track,Web,Login Module,Verify Dashboard,Wait for dashboard,Dashboard should be visible,Dashboard loaded successfully,Pass,,LG-08,
-Tower Track,Web,Transportation View,Verify Required Parts,Read table,Table may or may not contain rows,Rows: 0,Pass,,TV-02,
-Tower Track,Web,Transportation View,Verify Dependency Status,Read table,Table may or may not contain rows,Rows: 0,Pass,,TV-03,
+Tower Track,Web,Impact Analysis,Verify default filters,Read filters,Filters should be visible,"{'facility': 'PHX1 (Chandler, AZ)', 'start_date': '', 'end_date': ''}",Pass,,IA-01,
+Tower Track,Web,Impact Analysis,Verify Facility selection,Select Facility,Facility should be selected,"Facility=CHI1 (Aurora, IL)",Pass,,IA-01A,
+Tower Track,Web,Impact Analysis,Verify Allocation Recommendation,Select Facility + Date Range,Recommendation should load,CHI1 | 10-08-2024 → 25-11-2024,Pass,,IA-04,

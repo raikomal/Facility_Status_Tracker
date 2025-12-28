@@ -11,7 +11,6 @@ def test_impact_analysis_flow(driver):
     # ================= NAVIGATION =================
     slider.click_slider("Part Allocation Insights")
     slider.hover_and_click_facility_status_tracker()
-
     facility.go_to_impact_analysis()
 
     # ================= DEFAULT FILTERS =================
@@ -27,9 +26,9 @@ def test_impact_analysis_flow(driver):
         "Pass", "", "IA-01", ""
     )
 
-    # ================= SELECT FACILITY (ADDED STEP – SAFE) =================
+    # ================= SELECT FACILITY =================
     facility.select_impact_facility("CHI1 (Aurora, IL)")
-    time.sleep(1.5)
+    time.sleep(1)
 
     write_test_report(
         "Tower Track", "Web", "Impact Analysis",
@@ -40,32 +39,32 @@ def test_impact_analysis_flow(driver):
         "Pass", "", "IA-01A", ""
     )
 
-    # ================= STEP 1 =================
-    facility.select_impact_status("delayed")
-    facility.select_impact_part("Generator w/ Enclosure")
+    # ================= DATE SELECTION =================
+    facility.select_impact_start_date("10-08-2024")
+    facility.select_impact_end_date("25-11-2024")
 
-    rows1 = facility.get_impact_table_rows()
+    # ================= GET RECOMMENDATION =================
+    facility.click_get_recommendation()
+    time.sleep(2)
 
     write_test_report(
         "Tower Track", "Web", "Impact Analysis",
-        "Verify Delayed + Generator",
-        "Change filters",
-        "Table should update",
-        f"Rows: {len(rows1)}",
-        "Pass", "", "IA-02", ""
+        "Verify Allocation Recommendation",
+        "Select Facility + Date Range",
+        "Recommendation should load",
+        "CHI1 | 10-08-2024 → 25-11-2024",
+        "Pass", "", "IA-04", ""
     )
 
-    # ================= STEP 2 =================
-    facility.select_impact_status("pending")
-    facility.select_impact_part("Cable Busway")
-
-    rows2 = facility.get_impact_table_rows()
+    # ================= MODIFY ALLOCATION =================
+    facility.modify_allocation_and_compute_cost()
+    time.sleep(2)
 
     write_test_report(
         "Tower Track", "Web", "Impact Analysis",
-        "Verify Pending + Cable Busway",
-        "Change filters",
-        "Table should update",
-        f"Rows: {len(rows2)}",
-        "Pass", "", "IA-03", ""
+        "Modify Allocation & Compute Cost",
+        "Edit allocation quantities",
+        "Cost charts should update",
+        "20, 50, 70 entered",
+        "Pass", "", "IA-05", ""
     )

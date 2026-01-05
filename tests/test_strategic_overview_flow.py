@@ -262,18 +262,35 @@ def test_strategic_overview_flow(driver):
         "Verify Sankey","Change dropdown",
         "Flow updates","Updated","Pass","","SO-07","")
 
-    # ================= READINESS (LAST) =================
+    # ================= READINESS =================
+
+    # Facility (ONLY one with hover)
+    facility.select_readiness_viewpoint("Facility")
+    facility.hover_readiness_bars(count=5)
+
+
+    write_test_report(
+        "Tower Track", "Web", "Strategic Overview",
+        "Verify Facility readiness",
+        "Switch to Facility readiness",
+        "Facility readiness chart should load",
+        "Facility readiness visible and interactive",
+        "Pass", "", "SO-08", ""
+    )
+
+    # Resource / Alert / Transportation (NO hover)
     for view, tc in [
-        ("Facility","SO-08"),
-        ("Resource","SO-09"),
-        ("Alert","SO-10"),
-        ("Transportation","SO-11")
+        ("Resource", "SO-09"),
+        ("Alert", "SO-10"),
+        ("Transportation", "SO-11")
     ]:
         facility.select_readiness_viewpoint(view)
 
-        write_test_report("Tower Track","Web","Strategic Overview",
+        write_test_report(
+            "Tower Track", "Web", "Strategic Overview",
             f"Verify {view} readiness",
-            f"Switch to {view}",
-            "View should update",
-            f"{view} loaded",
-            "Pass","",tc,"")
+            f"Switch to {view} readiness",
+            "Readiness content should update",
+            f"{view} readiness loaded",
+            "Pass", "", tc, ""
+        )

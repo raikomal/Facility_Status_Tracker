@@ -680,6 +680,49 @@ class FacilityStatusPage:
         # Accept node OR link tooltip
         return has_text and (has_number or has_arrow)
 
+    def verify_sankey_flow_colors(self):
+        """
+        Verify Sankey chart cost flow color coding
+        Based on Cost Type (Allocation / Shortfall / Holding)
+        """
+
+        COST_COLOR_MAP = {
+            "allocation cost": ["#1265e0", "rgba(18,101,224"],
+            "shortfall cost": ["orange", "rgb(255,159", "rgba(255,159"],
+            "holding cost": ["#9ca3af", "rgb(156,163", "rgba(156,163"]
+        }
+
+        links = self.driver.find_elements(
+            By.XPATH,
+            "//*[name()='path' and contains(@class,'highcharts-link')]"
+        )
+
+        assert links, "❌ No Sankey links found"
+
+        validated_any = False
+
+        for link in links:
+            aria = (link.get_attribute("aria-label") or "").lower()
+
+            color = (
+                    link.get_attribute("stroke")
+                    or link.get_attribute("fill")
+                    or (link.get_attribute("style") or "")
+            ).lower()
+
+            for cost_type, expected_colors in COST_COLOR_MAP.items():
+                if cost_type in aria:
+                    assert any(c in color for c in expected_colors), (
+                        f"❌ Wrong color for '{cost_type}': {color}"
+                    )
+                    validated_any = True
+                    print(f"✅ {cost_type.title()} color verified → {color}")
+                    break
+
+        assert validated_any, "❌ No Sankey cost flows validated"
+
+        return True
+
     # Script_ID:1
     def hover_multiple_sankey_links(self, count=5):
         links = self.get_flow_links()
@@ -768,8 +811,8 @@ class FacilityStatusPage:
 
     def select_readiness_viewpoint(self, view):
         """
-        Switch Readiness dropdown (Facility / Resource / Alert / Transportation)
-        SAME PAGE – React state change
+        Switch Readiness dropdown and WAIT for UI update
+        Facility / Resource / Alert / Transportation
         """
 
         value_map = {
@@ -778,19 +821,15 @@ class FacilityStatusPage:
             "Alert": "alert",
             "Transportation": "transportation",
         }
-        # Script_ID:22
 
-        # ✅ EXACT Readiness dropdown (anchored to Readiness header)
+        # 1️⃣ Locate dropdown
         select_el = self.wait.until(
             EC.element_to_be_clickable(
-                (
-                    By.XPATH,
-                    "//h2[contains(text(),'Readiness')]/following::select[1]"
-                )
+                (By.XPATH, "//h2[contains(text(),'Readiness')]/following::select[1]")
             )
         )
 
-        # 🔥 React-safe change
+        # 2️⃣ Change value (React-safe)
         self.driver.execute_script(
             """
             const select = arguments[0];
@@ -802,7 +841,26 @@ class FacilityStatusPage:
             value_map[view]
         )
 
-        print(f"✅ Readiness switched to {view}")
+        print(f"🔁 Readiness changed to {view}")
+
+        # 3️⃣ WAIT for content re-render
+        time.sleep(1.5)
+
+        # 4️⃣ Scroll to Readiness section (HUMAN VISIBLE)
+        readiness_header = self.wait.until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//h2[contains(text(),'Readiness')]")
+            )
+        )
+
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});",
+            readiness_header
+        )
+
+        time.sleep(1.5)
+
+        print(f"✅ Readiness {view} view visible on screen")
         return True
 
     # Script_ID:20
@@ -824,29 +882,61 @@ class FacilityStatusPage:
         return True
 
     # Script_ID:23
-    def hover_readiness_bars(self):
+    def hover_readiness_bars(self, count=5):
         """
-        Hover ONLY readiness bars (Facility ViewPoint only)
+        DEMO-SAFE + VISUALLY OBVIOUS hover
+        Hover first N bars in Facility Readiness chart ONLY
         """
 
-        bars = self.wait.until(
-            EC.presence_of_all_elements_located(
+        print("🔁 Switching Readiness to Facility view")
+        self.select_readiness_viewpoint("Facility")
+        time.sleep(2)
+
+        # 🔒 Anchor strictly to Readiness chart container
+        readiness_chart = self.wait.until(
+            EC.presence_of_element_located(
                 (
                     By.XPATH,
-                    "//*[name()='path' and contains(@class,'highcharts-point') "
-                    "and contains(@aria-label,'Readiness Score')]"
+                    "//h2[contains(text(),'Readiness')]/following::div[contains(@class,'highcharts-container')][1]"
                 )
             )
         )
 
-        assert len(bars) > 0, "No readiness bars found (Facility ViewPoint)"
+        # Bring chart fully into view
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block:'center'});",
+            readiness_chart
+        )
+        time.sleep(1)
 
-        for bar in bars[:5]:
+        # 🔍 Find bars ONLY inside readiness chart
+        bars = readiness_chart.find_elements(
+            By.XPATH,
+            ".//*[name()='rect' or name()='path'][contains(@class,'highcharts-point')]"
+        )
+
+        if not bars:
+            raise AssertionError("❌ Readiness bars NOT found")
+
+        print(f"✅ Found {len(bars)} readiness bars")
+
+        # 🎯 Hover first N bars WITH OFFSET (THIS IS THE KEY)
+        for idx, bar in enumerate(bars[:count], start=1):
             self.driver.execute_script(
                 "arguments[0].scrollIntoView({block:'center'});", bar
             )
-            ActionChains(self.driver).move_to_element(bar).pause(0.4).perform()
+            time.sleep(0.4)
 
+            ActionChains(self.driver) \
+                .move_to_element(bar) \
+                .move_by_offset(5, -5) \
+                .pause(1.2) \
+                .perform()
+
+            print(f"🟢 Hovered readiness bar {idx}")
+            time.sleep(0.8)
+
+        print("✅ Readiness bar hover DEMO-VISIBLE")
         return True
 
     # Script_ID:24

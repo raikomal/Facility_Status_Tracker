@@ -9,7 +9,7 @@ The goal of this framework is to:
 
 Automate end-to-end UI validation of Tower Track dashboards
 
-Verify critical business KPIs
+Verify critical business KPIs..
 
 Ensure interactive charts (Highcharts) behave correctly
 
@@ -29,7 +29,7 @@ Highcharts (SVG handling)
 
 CSV Reporting
 
-GitHub Actions ready (future)
+GitHub Actions ready (future)..
 
 📁 Project Structure
 Tower_Track/
@@ -55,7 +55,7 @@ Tower_Track/
 ├── requirements.txt
 └── README.md
 
-✅ Automated Test Coverage
+✅ Automated Test Coverage ,
 1️⃣ Login Validation
 
 Valid credentials login
